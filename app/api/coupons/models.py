@@ -15,10 +15,6 @@ class Coupon(models.Model):
         constraints = [models.UniqueConstraint(fields=["amount"], name="unique_amount")]
 
     @property
-    def name(self) -> str:
-        return self.__str__()
-
-    @property
     def amount_in_dolars(self) -> int:
         return self.amount // 100
 
