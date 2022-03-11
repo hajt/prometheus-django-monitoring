@@ -1,0 +1,55 @@
+version: '3.5'
+
+x-environment: &common-environment
+  POSTGRES_DB: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+
+services:
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   volumes:
+  #     - ./provisioning/prometheus:/etc/prometheus
+  #   ports:
+  #     - '9090:9090'
+  # alertmanager:
+  #   image: prom/alertmanager
+  #   container_name: alertmanager
+  #   ports:
+  #     - '9093:9093'
+  # node-exporter:
+  #   image: prom/node-exporter
+  #   container_name: node-exporter
+  #   ports:
+  #     - '9100:9100'
+  # grafana:
+  #   image: grafana/grafana:6.7.4
+  #   container_name: grafana
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - ./provisioning/grafana/datasources:/etc/grafana/provisioning/datasources
+  #     - ./provisioning/grafana/dashboards:/etc/grafana/provisioning/dashboards
+  db:
+    image: postgres
+    environment:
+      <<: *common-environment
+  
+  app:
+    build:
+      context: .
+      dockerfile: ./app/docker/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: 8000
+      HOST: 0.0.0.0
+      DJANGO_DEBUG: "True"
+    volumes:
+      - ./app:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    command: /start.sh
+    
