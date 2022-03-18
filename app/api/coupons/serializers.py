@@ -24,3 +24,4 @@ class UserCouponDetailSerializer(UserCouponSerializer):
         fields = UserCouponSerializer.Meta.fields + [
             "amount",
         ]
+        read_only_fields = ("id", "code")

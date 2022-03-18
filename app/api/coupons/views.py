@@ -5,11 +5,12 @@ from .serializers import UserCouponDetailSerializer, UserCouponSerializer
 
 
 class UserCouponViewSet(viewsets.ModelViewSet):
-    serializer_class = UserCouponSerializer
-    http_method_names = ["get"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
-        return UserCoupon.objects.filter(user=self.request.user)
+        return UserCoupon.objects.filter(user__username=self.request.user.username).select_related(
+            "user"
+        )
 
     def get_serializer_class(self):
-        return UserCouponDetailSerializer if self.action == "retrieve" else self.serializer_class
+        return UserCouponSerializer if self.action == "list" else UserCouponDetailSerializer
