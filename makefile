@@ -14,8 +14,9 @@ shell:
 superuser:
 	docker-compose run --rm app python manage.py createsuperuser
 
+# usage - `make migrations app=APP`
 migrations:
-	docker-compose run --rm app python manage.py makemigrations
+	docker-compose run --rm app python manage.py makemigrations $(app)
 
 migrate:
 	docker-compose run --rm app python manage.py migrate
