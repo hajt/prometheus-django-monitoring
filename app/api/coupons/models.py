@@ -1,14 +1,20 @@
 import uuid
 
 from django.db import models
+from django.utils.crypto import get_random_string
 
 from .validators import validate_amount
 
 
 class Coupon(models.Model):
-    id = models.UUIDField(primary_key=True, null=False, default=uuid.uuid4)
+    AMOUNTS = (
+        (500, "500"),
+        (1000, "1000"),
+        (1500, "1500"),
+    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     amount = models.PositiveSmallIntegerField(
-        null=False, help_text="Amount in cents", validators=[validate_amount], unique=True
+        help_text="Amount in cents", unique=True, validators=[validate_amount], choices=AMOUNTS
     )
 
     @property
@@ -23,4 +29,34 @@ class Coupon(models.Model):
         return f"{self.amount_in_dolars}$"
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} ({self.amount_in_dolars}$)>"
+        return f"<{self.__class__.__name__}({self.amount_in_dolars}$)>"
+
+
+class UserCoupon(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    code = models.CharField(max_length=16, default=get_random_string)
+    valid = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.PROTECT, related_name="user_coupons")
+    user = models.ForeignKey(
+        "users.User", on_delete=models.PROTECT, related_name="coupons", blank=True, null=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["valid", "user", "coupon"],
+                condition=models.Q(valid=True),
+                name="unique_valid_user_coupon",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.code} | {self.user}"
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}({self.code})>"
