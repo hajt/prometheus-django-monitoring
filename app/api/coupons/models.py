@@ -8,11 +8,8 @@ from .validators import validate_amount
 class Coupon(models.Model):
     id = models.UUIDField(primary_key=True, null=False, default=uuid.uuid4)
     amount = models.PositiveSmallIntegerField(
-        null=False, help_text="Amount in cents", validators=[validate_amount]
+        null=False, help_text="Amount in cents", validators=[validate_amount], unique=True
     )
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["amount"], name="unique_amount")]
 
     @property
     def amount_in_dolars(self) -> int:
@@ -26,4 +23,4 @@ class Coupon(models.Model):
         return f"{self.amount_in_dolars}$"
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.name}>"
+        return f"<{self.__class__.__name__} ({self.amount_in_dolars}$)>"
