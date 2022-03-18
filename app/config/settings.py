@@ -42,10 +42,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3th party libs
     "rest_framework",
+    "rest_framework.authtoken",
+    "drf_yasg",
     # Own modules
     "api.coupons",
     "api.users",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -56,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -137,3 +141,15 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
+
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "description": "Format: `Bearer <TOKEN>`",
+            "in": "header",
+        }
+    },
+}
