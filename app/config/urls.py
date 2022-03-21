@@ -13,6 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from api.core.views import metrics_view
+
 from django.contrib import admin
 from django.urls import include, path
 
@@ -29,4 +31,5 @@ urlpatterns = [
     path("api/", include(api_urls)),
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("auth/token/", obtain_auth_token, name="api_token_auth"),
+    path("metrics/", metrics_view, name="metrics_view"),
 ]
