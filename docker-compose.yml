@@ -36,7 +36,7 @@ services:
     environment:
       <<: *common-environment
   
-  app:
+  app: &app
     build:
       context: .
       dockerfile: ./app/docker/Dockerfile
@@ -52,4 +52,26 @@ services:
     depends_on:
       - db
     command: /start.sh
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  celery-worker: 
+    <<: *app
+    ports: [ ]
+    depends_on:
+      - redis
+      - app
+    command: celery -A config worker -l info
+
+  celery-beat: 
+    <<: *app
+    ports: [ ]
+    depends_on:
+      - redis
+      - app
+    command: celery -A config beat -l info
+
     
