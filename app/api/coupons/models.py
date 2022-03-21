@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from django.utils.crypto import get_random_string
+from django.utils.timezone import now
 
 from .validators import validate_amount
 
@@ -36,7 +37,7 @@ class UserCoupon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     code = models.CharField(max_length=16, default=get_random_string)
     valid = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=now)
     coupon = models.ForeignKey(Coupon, on_delete=models.PROTECT, related_name="user_coupons")
     user = models.ForeignKey(
         "users.User", on_delete=models.PROTECT, related_name="coupons", blank=True, null=True
