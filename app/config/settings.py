@@ -14,6 +14,8 @@ import os
 from distutils.util import strtobool
 from pathlib import Path
 
+from celery.schedules import crontab
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -163,3 +165,14 @@ SWAGGER_SETTINGS = {
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_BACKEND_URL", "redis://redis:6379")
+
+CELERY_BEAT_SCHEDULE = {
+    "generate_coupons": {
+        "task": "api.coupons.tasks.generate_coupons",
+        "schedule": crontab(minute="*/1"),
+    },
+    "remove_expired_coupons": {
+        "task": "api.coupons.tasks.remove_expired_coupons",
+        "schedule": crontab(minute="*/5"),
+    },
+}
