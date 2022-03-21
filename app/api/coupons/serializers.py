@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import UserCoupon
 
@@ -25,3 +26,9 @@ class UserCouponDetailSerializer(UserCouponSerializer):
             "amount",
         ]
         read_only_fields = ("id", "code")
+
+    def validate(self, validated_data):
+        if validated_data["valid"] is True:
+            raise ValidationError({"valid": "This field might be only 'false'"})
+
+        return validated_data
