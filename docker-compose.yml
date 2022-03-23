@@ -23,19 +23,18 @@ services:
     container_name: node-exporter
     ports:
       - '9100:9100'
-  # grafana:
-  #   image: grafana/grafana:6.7.4
-  #   container_name: grafana
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - ./provisioning/grafana/datasources:/etc/grafana/provisioning/datasources
-  #     - ./provisioning/grafana/dashboards:/etc/grafana/provisioning/dashboards
+  grafana:
+    image: grafana/grafana:6.7.4
+    container_name: grafana
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./provisioning/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./provisioning/grafana/dashboards:/etc/grafana/provisioning/dashboards
   db:
     image: postgres
     environment:
       <<: *common-environment
-  
   app:
     build:
       context: .
