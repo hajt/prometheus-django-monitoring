@@ -6,6 +6,7 @@ x-environment: &common-environment
   POSTGRES_PASSWORD: postgres
 
 services:
+  # Prometheus services
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -18,11 +19,6 @@ services:
     container_name: alertmanager
     ports:
       - '9093:9093'
-  node-exporter:
-    image: prom/node-exporter
-    container_name: node-exporter
-    ports:
-      - '9100:9100'
   grafana:
     image: grafana/grafana:6.7.4
     container_name: grafana
@@ -31,10 +27,12 @@ services:
     volumes:
       - ./provisioning/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./provisioning/grafana/dashboards:/etc/grafana/provisioning/dashboards
-  db:
-    image: postgres
-    environment:
-      <<: *common-environment
+  node-exporter: # addidional service as a exporter example
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - '9100:9100'
+  # Web App services
   app:
     build:
       context: .
@@ -51,4 +49,7 @@ services:
     depends_on:
       - db
     command: /start.sh
-    
+  db:
+    image: postgres
+    environment:
+      <<: *common-environment

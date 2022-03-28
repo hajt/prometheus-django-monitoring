@@ -37,10 +37,26 @@ class UserCouponViewSet(viewsets.ModelViewSet):
     def create(self, request):
         user = self.request.user
 
+        self._validate_valid_coupon_exists(user)
+        self._validate_coupon_created_within_5_minutes(user)
+
+        coupon = Coupon.objects.order_by("?").first()
+
+        self._validate_coupon_type_exists(coupon, user)
+
+        start_time = now().timestamp()
+        user_coupon = UserCoupon.objects.create(coupon=coupon, user=user)
+        coupon_create_time.observe(now().timestamp() - start_time)
+        coupon_create_last_status.labels(user=user).state("success")
+
+        return Response(UserCouponDetailSerializer(user_coupon).data)
+
+    def _validate_valid_coupon_exists(self, user):
         if user.coupons.filter(valid=True):
             coupon_create_last_status.labels(user=user).state("error")
             raise ValidationError({"error": "Valid coupon already exists"})
 
+    def _validate_coupon_created_within_5_minutes(self, user):
         lock_in_minutes = 5
         last_user_coupon = (
             user.coupons.filter(
@@ -55,23 +71,14 @@ class UserCouponViewSet(viewsets.ModelViewSet):
             time_left = (last_user_coupon.created_at + timedelta(minutes=lock_in_minutes)) - now()
             raise ValidationError(
                 {
-                    "error": f"Coupon create will be availible in {time_left.seconds//60} minutes \
-                        {time_left.seconds%60} seconds"
+                    "error": f"Coupon create will be availible in {time_left.seconds//60} minutes {time_left.seconds%60} seconds"  # noqa: E501
                 }
             )
 
-        coupon = Coupon.objects.order_by("?").first()
-
+    def _validate_coupon_type_exists(self, coupon, user):
         if not coupon:
             coupon_create_last_status.labels(user=user).state("error")
             raise ValidationError({"error": "No coupons defined"})
-
-        start_time = now().timestamp()
-        user_coupon = UserCoupon.objects.create(coupon=coupon, user=user)
-        coupon_create_time.observe(now().timestamp() - start_time)
-        coupon_create_last_status.labels(user=user).state("success")
-
-        return Response(UserCouponDetailSerializer(user_coupon).data)
 
     def _get_endpoint(self, pk=None):
         return f"{reverse('coupons-list')}{pk}/" if pk else reverse("coupons-list")
